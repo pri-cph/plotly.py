@@ -339,19 +339,25 @@ class _Dendrogram(object):
         """
         d = distfun(X)
         Z = linkagefun(d)
+        sch.set_link_color_palette(colorscale)
         P = sch.dendrogram(
             Z,
             orientation=self.orientation,
             labels=self.labels,
             no_plot=True,
             color_threshold=color_threshold,
+            above_threshold_color='#000000'
         )
+        sch.set_link_color_palette(None)
 
         icoord = scp.array(P["icoord"])
         dcoord = scp.array(P["dcoord"])
         ordered_labels = scp.array(P["ivl"])
         color_list = scp.array(P["color_list"])
-        colors = self.get_color_dict(colorscale)
+
+        color_dict = {}
+        if colorscale is None:
+            color_dict = self.get_color_dict(colorscale)
 
         trace_list = []
 
@@ -368,6 +374,8 @@ class _Dendrogram(object):
             else:
                 ys = icoord[i]
             color_key = color_list[i]
+            if color_dict:
+                color_key = color_dict[color_key]
             hovertext_label = None
             if hovertext:
                 hovertext_label = hovertext[i]
@@ -376,7 +384,7 @@ class _Dendrogram(object):
                 x=np.multiply(self.sign[self.xaxis], xs),
                 y=np.multiply(self.sign[self.yaxis], ys),
                 mode="lines",
-                marker=dict(color=colors[color_key]),
+                marker=dict(color=color_key),
                 text=hovertext_label,
                 hoverinfo="text",
             )
